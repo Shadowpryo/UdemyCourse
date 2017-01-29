@@ -18,14 +18,12 @@ UOpenDoor::UOpenDoor()
 
 void UOpenDoor::openDoor()
 {
-	//Find the owning actor
-	AActor* Owner = GetOwner();
+	Owner->SetActorRotation(FRotator(0.0f, openAngle, 0.0f));
+}
 
-	//create a rotator
-	FRotator NewRotation = FRotator(0.0f, openAngle, 0.0f);
-
-	//Set the door rotation
-	Owner->SetActorRotation(NewRotation);
+void UOpenDoor::closeDoor()
+{
+	Owner->SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
 }
 
 // Called when the game starts
@@ -33,6 +31,7 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Owner = GetOwner();
 	actorsThatOpen = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
@@ -46,6 +45,11 @@ void UOpenDoor::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompo
 	{
 		// If the actorThatOpens is in the volume
 		openDoor();
+		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
 	}
 
+	//Check if it's time to close door
+	if (GetWorld()->GetTimeSeconds() - LastDoorOpenTime > DoorCloseDelay) {
+		closeDoor();
+	}
 }
